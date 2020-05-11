@@ -175,7 +175,7 @@ namespace Eplan.EplAddIn.KAZPROMMenu
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(133, 43);
+            this.button2.Location = new System.Drawing.Point(132, 43);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(95, 23);
             this.button2.TabIndex = 16;
