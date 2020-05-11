@@ -31,6 +31,7 @@ namespace Eplan.EplAddIn.KAZPROMMenu
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.label1 = new System.Windows.Forms.Label();
             this.button1 = new System.Windows.Forms.Button();
             this.lazarusBindingSource = new System.Windows.Forms.BindingSource(this.components);
@@ -189,6 +190,7 @@ namespace Eplan.EplAddIn.KAZPROMMenu
             this.Controls.Add(this.listBox2);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.label1);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Form1";
             this.Text = "Проверка расположений функций в 3D";
             this.Load += new System.EventHandler(this.Form1_Load_1);
