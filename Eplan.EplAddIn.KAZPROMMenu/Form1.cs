@@ -39,7 +39,7 @@ namespace Eplan.EplAddIn.KAZPROMMenu
         string projectname = "";
         private void button1_Click(object sender, EventArgs e)
         {
-            //Thread myThread = new Thread(new ParameterizedThreadStart(Update));
+            Thread myThread = new Thread(new ParameterizedThreadStart(Update));
             Update(dev);
             /* myThread.Start(dev);
              myThread.Priority = ThreadPriority.Highest;
