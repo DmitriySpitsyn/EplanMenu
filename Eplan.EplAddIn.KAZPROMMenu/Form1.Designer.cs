@@ -176,6 +176,7 @@ namespace Eplan.EplAddIn.KAZPROMMenu
             // Form1
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
+            this.BackColor = System.Drawing.SystemColors.ButtonFace;
             this.ClientSize = new System.Drawing.Size(982, 507);
             this.Controls.Add(this.label9);
             this.Controls.Add(this.label8);
