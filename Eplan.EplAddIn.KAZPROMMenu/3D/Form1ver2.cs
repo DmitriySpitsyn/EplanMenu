@@ -30,6 +30,7 @@ namespace Eplan.EplAddIn.KAZPROMMenu
             public string Page;
             public string Name;
             public string Designation;
+            public bool notfull;
 
         }
         public class part
@@ -64,22 +65,35 @@ namespace Eplan.EplAddIn.KAZPROMMenu
                 dev.Clear();
                 bool searchPLC = false;
                 progressBar1.Maximum = Lpage.Count - 1;
+                int arcount3d = 0;
                 for (int p = 0; p < Lpage.Count; p++)
                 {
                     progressBar1.Value = p;
                     func = Lpage[p].Functions.ToList();
                     foreach (Function f in func)
                     {
-                        if (f.IsMainFunction != true) { continue; }
+                        if (checkBox1.Checked==true)
+                        {
+                            if (f.IsMainFunction != true) { continue; }
+                        }
+                        else
+                        {
+                            if ((f.IsMainFunction != true)|| (f.Properties.FUNC_CATEGORY_GROUP_ID=="400/1/1")) { continue; }
+                        }
+                        
                         countelement += 1;
                         articref = f.ArticleReferences.ToList();
                         searchPLC = false;
+                        arcount3d = 0;
                         foreach (ArticleReference ar in articref)
                         {
                             if (ar.Properties.ARTICLEREF_COUNT_NOTPLACED_3D != 0)
                             {
                                 searchPLC = true;
-                                break;
+                                if (ar.Properties.ARTICLEREF_COUNT - ar.Properties.ARTICLEREF_COUNT_NOTPLACED_3D == 0)
+                                {
+                                    arcount3d += 1;
+                                }
                             }
                         }
 
@@ -88,6 +102,7 @@ namespace Eplan.EplAddIn.KAZPROMMenu
                             devl.Name = f.Name;
                             devl.Page = Lpage[p].Name;
                             devl.Designation = f.Properties.DESIGNATION_LOCATION;
+                            if (arcount3d== articref.Count) { devl.notfull = false; } else { devl.notfull = true; }
                             dev.Add(devl);
                         }
                     }
@@ -101,13 +116,18 @@ namespace Eplan.EplAddIn.KAZPROMMenu
                         countelement += 1;
                         articref = ft.ArticleReferences.ToList();
                         searchPLC = false;
+                        arcount3d = 0;
                         foreach (ArticleReference ar in articref)
                         {
-                            if (ar.Properties.ARTICLEREF_COUNT_NOTPLACED_3D != 0)
+                            if (ar.Properties.ARTICLEREF_COUNT_NOTPLACED_3D !=0)
                             {
                                 searchPLC = true;
-                                break;
+                                if (ar.Properties.ARTICLEREF_COUNT - ar.Properties.ARTICLEREF_COUNT_NOTPLACED_3D == 0)
+                                {
+                                    arcount3d += 1;
+                                }
                             }
+                            
                         }
 
                         if ((searchPLC == true) || (articref.Count == 0))
@@ -115,6 +135,7 @@ namespace Eplan.EplAddIn.KAZPROMMenu
                             devl.Name = ft.Name;
                             devl.Page = Lpage[p].Name;
                             devl.Designation = ft.Properties.DESIGNATION_LOCATION;
+                            if (arcount3d == articref.Count) { devl.notfull = false; } else { devl.notfull = true; }
                             dev.Add(devl);
                         }
                     }
@@ -197,7 +218,11 @@ namespace Eplan.EplAddIn.KAZPROMMenu
                 {
 
                     devf.Add(dev[i]);
-                    listBox2.Items.Add("Страница №: " + dev[i].Page + " " + dev[i].Name);
+                    if (dev[i].notfull==false)
+                    { listBox2.Items.Add("Страница №: " + dev[i].Page + " " + dev[i].Name); }
+                    else
+                    { listBox2.Items.Add("Страница №: " + dev[i].Page + " " + dev[i].Name+"  НЕ ПОЛНОСТЬЮ!"); }
+
                 }
                 else
                 {
@@ -205,7 +230,10 @@ namespace Eplan.EplAddIn.KAZPROMMenu
                     {
                         // MessageBox.Show(listBox1.SelectedItem.ToString() +"---"+ dev[i].Designation);
                         devf.Add(dev[i]);
-                        listBox2.Items.Add("Страница №: " + dev[i].Page + " " + dev[i].Name);
+                        if (dev[i].notfull == false)
+                        { listBox2.Items.Add("Страница №: " + dev[i].Page + " " + dev[i].Name); }
+                        else
+                        { listBox2.Items.Add("Страница №: " + dev[i].Page + " " + dev[i].Name + "  НЕ ПОЛНОСТЬЮ!"); }
                     }
                 }
             }

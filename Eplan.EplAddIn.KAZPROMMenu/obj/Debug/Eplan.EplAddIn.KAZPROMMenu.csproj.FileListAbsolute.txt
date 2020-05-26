@@ -25,3 +25,4 @@ C:\Users\DIMA\Documents\Visual Studio 2015\Projects\Eplan.EplAddIn.KAZPROMMenu\E
 C:\Users\DIMA\Documents\Visual Studio 2015\Projects\Eplan.EplAddIn.KAZPROMMenu\Eplan.EplAddIn.KAZPROMMenu\bin\Debug\Eplan.EplAddIn.KAZPROMMenu.dll.config
 C:\Users\DIMA\Documents\Visual Studio 2015\Projects\Eplan.EplAddIn.KAZPROMMenu\Eplan.EplAddIn.KAZPROMMenu\obj\Debug\Eplan.EplAddIn.KAZPROMMenu.Form2.resources
 C:\Users\DIMA\Documents\Visual Studio 2015\Projects\Eplan.EplAddIn.KAZPROMMenu\Eplan.EplAddIn.KAZPROMMenu\obj\Debug\Eplan.EplAddIn.KAZPROMMenu.Form1ver2.resources
+C:\Users\DIMA\Documents\Visual Studio 2015\Projects\Eplan.EplAddIn.KAZPROMMenu\Eplan.EplAddIn.KAZPROMMenu\obj\Debug\Eplan.EplAddIn.KAZPROMMenu.csprojResolveAssemblyReference.cache

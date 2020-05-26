@@ -42,6 +42,7 @@ namespace Eplan.EplAddIn.KAZPROMMenu
             this.listBox1 = new System.Windows.Forms.ListBox();
             this.label8 = new System.Windows.Forms.Label();
             this.label9 = new System.Windows.Forms.Label();
+            this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // label1
@@ -55,9 +56,9 @@ namespace Eplan.EplAddIn.KAZPROMMenu
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(12, 43);
+            this.button1.Location = new System.Drawing.Point(12, 50);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(95, 23);
+            this.button1.Size = new System.Drawing.Size(101, 23);
             this.button1.TabIndex = 1;
             this.button1.Text = "Проверить";
             this.button1.UseVisualStyleBackColor = true;
@@ -151,11 +152,22 @@ namespace Eplan.EplAddIn.KAZPROMMenu
             this.label9.TabIndex = 15;
             this.label9.Text = "Не расположенные функции";
             // 
+            // checkBox1
+            // 
+            this.checkBox1.AutoSize = true;
+            this.checkBox1.Location = new System.Drawing.Point(12, 27);
+            this.checkBox1.Name = "checkBox1";
+            this.checkBox1.Size = new System.Drawing.Size(120, 17);
+            this.checkBox1.TabIndex = 16;
+            this.checkBox1.Text = "Учитывать кабели";
+            this.checkBox1.UseVisualStyleBackColor = true;
+            // 
             // Form1ver2
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.BackColor = System.Drawing.SystemColors.ButtonFace;
             this.ClientSize = new System.Drawing.Size(982, 507);
+            this.Controls.Add(this.checkBox1);
             this.Controls.Add(this.label9);
             this.Controls.Add(this.label8);
             this.Controls.Add(this.listBox1);
@@ -169,7 +181,7 @@ namespace Eplan.EplAddIn.KAZPROMMenu
             this.Controls.Add(this.label1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Form1ver2";
-            this.Text = "Проверка расположений функций в 3D Новая версия";
+            this.Text = "Проверка расположений функций в 3D";
             this.Load += new System.EventHandler(this.Form1_Load_1);
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -197,5 +209,6 @@ namespace Eplan.EplAddIn.KAZPROMMenu
         private System.Windows.Forms.ListBox listBox1;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.CheckBox checkBox1;
     }
 }
