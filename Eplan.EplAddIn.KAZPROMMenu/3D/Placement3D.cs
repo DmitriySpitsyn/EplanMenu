@@ -23,7 +23,8 @@ namespace Eplan.EplAddIn.KAZPROMMenu
             }
             public bool Execute(ActionCallingContext oActionCallingContext)
             {
-                Form1 newForm = new Form1();
+                
+                Form1 newForm = new  Form1();
                 newForm.Show();
                 return true;
                 

@@ -2,7 +2,7 @@
 
 namespace Eplan.EplAddIn.KAZPROMMenu
 {
-    partial class Form1
+    partial class Form1ver2
     {
         /// <summary>
         /// Required designer variable.
@@ -30,23 +30,18 @@ namespace Eplan.EplAddIn.KAZPROMMenu
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1ver2));
             this.label1 = new System.Windows.Forms.Label();
             this.button1 = new System.Windows.Forms.Button();
-            this.lazarusBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.listBox2 = new System.Windows.Forms.ListBox();
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.label4 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
-            this.label6 = new System.Windows.Forms.Label();
-            this.label7 = new System.Windows.Forms.Label();
             this.listBox1 = new System.Windows.Forms.ListBox();
             this.label8 = new System.Windows.Forms.Label();
             this.label9 = new System.Windows.Forms.Label();
-            ((System.ComponentModel.ISupportInitialize)(this.lazarusBindingSource)).BeginInit();
             this.SuspendLayout();
             // 
             // label1
@@ -126,23 +121,6 @@ namespace Eplan.EplAddIn.KAZPROMMenu
             this.label5.TabIndex = 10;
             this.label5.Text = "Всего элементов:";
             // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(165, 456);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(115, 13);
-            this.label6.TabIndex = 11;
-            this.label6.Text = "Всего элементов 3D:";
-            // 
-            // label7
-            // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(276, 456);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(0, 13);
-            this.label7.TabIndex = 12;
-            // 
             // listBox1
             // 
             this.listBox1.FormattingEnabled = true;
@@ -173,7 +151,7 @@ namespace Eplan.EplAddIn.KAZPROMMenu
             this.label9.TabIndex = 15;
             this.label9.Text = "Не расположенные функции";
             // 
-            // Form1
+            // Form1ver2
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.BackColor = System.Drawing.SystemColors.ButtonFace;
@@ -181,8 +159,6 @@ namespace Eplan.EplAddIn.KAZPROMMenu
             this.Controls.Add(this.label9);
             this.Controls.Add(this.label8);
             this.Controls.Add(this.listBox1);
-            this.Controls.Add(this.label7);
-            this.Controls.Add(this.label6);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.progressBar1);
@@ -192,10 +168,9 @@ namespace Eplan.EplAddIn.KAZPROMMenu
             this.Controls.Add(this.button1);
             this.Controls.Add(this.label1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Name = "Form1";
-            this.Text = "Проверка расположений функций в 3D";
+            this.Name = "Form1ver2";
+            this.Text = "Проверка расположений функций в 3D Новая версия";
             this.Load += new System.EventHandler(this.Form1_Load_1);
-            ((System.ComponentModel.ISupportInitialize)(this.lazarusBindingSource)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -212,7 +187,6 @@ namespace Eplan.EplAddIn.KAZPROMMenu
 
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.BindingSource lazarusBindingSource;
 
         private System.Windows.Forms.ListBox listBox2;
         private System.Windows.Forms.Label label2;
@@ -220,8 +194,6 @@ namespace Eplan.EplAddIn.KAZPROMMenu
         private System.Windows.Forms.ProgressBar progressBar1;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.Label label6;
-        private System.Windows.Forms.Label label7;
         private System.Windows.Forms.ListBox listBox1;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.Label label9;

@@ -255,8 +255,10 @@ namespace Eplan.EplAddIn.KAZPROMMenu
             {
                 if (projectname != "")
                 {
-                    oedit.OpenPageWithName(projectname, devf[listBox2.SelectedIndex].Page);
-                    //oedit.OpenPageWithNameAndFunctionName(projectname, devf[listBox2.SelectedIndex].Page, devf[listBox2.SelectedIndex].Name);
+                    //oedit.OpenPageWithName(projectname, devf[listBox2.SelectedIndex].Page);
+
+                    oedit.OpenPageWithNameAndFunctionName(projectname, devf[listBox2.SelectedIndex].Page, devf[listBox2.SelectedIndex].Name);
+                    oedit.SetFocusToGED();
                 }
 
             }

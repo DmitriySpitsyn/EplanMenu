@@ -31,8 +31,10 @@ namespace Class1
         {
             Menu OurMenu = new Menu();
             OurMenu.AddMainMenu("KAZPROM ENGINEERING", Eplan.EplApi.Gui.Menu.MainMenuName.eMainMenuUtilities, "Обновить цены", "UpdatePrice","Обновить цены с 1С", 1);
-            OurMenu.AddPopupMenuItem("Работа с устройствами", "Проверить расположение в 3D", "Placement3D", "Проверка расположения устройства в виде 3D", OurMenu.GetCustomMenuId("Обновить цены", "UpdatePrice"), 1, false, false);
+            OurMenu.AddPopupMenuItem("Работа с устройствами", "Проверить расположение в 3D", "Test3dver2", "Проверка расположения устройства в виде 3D", OurMenu.GetCustomMenuId("Обновить цены", "UpdatePrice"), 1, false, false);
              OurMenu.AddMenuItem("О проекте", "About", "Информация о проекте", OurMenu.GetCustomMenuId("Обновить цены", "UpdatePrice"), 2, true, true);
+            OurMenu.AddMenuItem("Работа с спецификацией", "PLC", "Работа с спецификацией", OurMenu.GetCustomMenuId("Проверить расположение в 3D", "Test3dver2"), 2, false, false);
+           // OurMenu.AddMenuItem("Расположение в 3D 2", "Test3dver2", "Проверить расположение в 3D2", OurMenu.GetCustomMenuId("Работа с спецификацией", "PLC"), 2, false, false);
             return true;
         }
 
