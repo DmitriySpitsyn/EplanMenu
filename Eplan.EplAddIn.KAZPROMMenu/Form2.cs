@@ -25,9 +25,11 @@ namespace Eplan.EplAddIn.KAZPROMMenu
             public string partnr { get; set; }
             public int pcount { get; set; }
             public PropertyValue design { get; set; }
+            public PropertyValue note { get; set; }
         }
         public List<part> filtpart = new List<part>();
         public List<part> filtpart2 = new List<part>();
+        public List <DeviceListEntry> Devlist=new List<DeviceListEntry>() ;
         BackgroundWorker bw;
         private void button1_Click(object sender, EventArgs e)
         {
@@ -125,25 +127,7 @@ namespace Eplan.EplAddIn.KAZPROMMenu
                      listBox1.Items.Add(i.ToString()+" "+filtpart[i].partnr + "  " + filtpart[i].pcount.ToString() + "***" + filtpart[i].design);
 
                  }*/
-                listBox1.Items.Clear();
-                listBox1.Items.Add("Все_");
-                for (int i = 0; i < filtpart.Count; i++)
-                {
-                    bool desloctrue = false;
-                    for (int c = 0; c < listBox1.Items.Count; c++)
-                    {
-                        if (listBox1.Items[c].ToString() == filtpart[i].design)
-                        {
-                            desloctrue = true;
-                        }
-                    }
-                    if (desloctrue != true & (filtpart[i].design != ""))
-                    {
-                        listBox1.Items.Add(filtpart[i].design);
-                    }
-                }
-
-
+          
 
             }
 
@@ -153,62 +137,123 @@ namespace Eplan.EplAddIn.KAZPROMMenu
 
         }
 
-        private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
+       
+
+        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
-           
+
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            using (LockingStep oLS = new LockingStep())
+            { // ... доступ к данным P8 ...
+
+                SelectionSet Set = new SelectionSet();
+                Project CurrentProject = Set.GetCurrentProject(true);
+                StorableObject[] storableObjects = Set.Selection;
+                foreach(StorableObject f in storableObjects)
+                {
+                    MessageBox.Show(f.GetType().ToString());
+
+                }
+            }
+            }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            using (LockingStep oLS = new LockingStep())
+            { // ... доступ к данным P8 ...
+
+               // dataGridView1.Rows.Clear();
+                SelectionSet Set = new SelectionSet();
+                Project CurrentProject = Set.GetCurrentProject(true);
+                DeviceService devservice = new DeviceService();
+                Devlist = devservice.GetAllDeviceListItems(CurrentProject).ToList();
+                int j = 0;
+                dataGridView2.Rows.Clear();
+                dataGridView2.Rows.Add(1, "Общий список изделий", "---");
+                bool searchgesign = false;
+                progressBar1.Maximum = Devlist.Count;
+                foreach(DeviceListEntry f in Devlist)
+                {
+                    progressBar1.Value += 1;
+                    searchgesign = false;
+                    for (int i=0;i< dataGridView2.Rows.Count; i++)
+                    {
+                        //MessageBox.Show(dataGridView2[0, i].Value.ToString()+" "+ dataGridView2[1, i].Value.ToString()+" " + dataGridView2[2, i].Value.ToString());
+                        if ((f.Properties.DEVICELISTENTRY_PLANT==dataGridView2[1,i].Value .ToString())& (dataGridView2[1, i].Value!=null))
+                        {
+                            searchgesign = true;
+                            break;
+                        }
+                    }
+                    if (searchgesign == false)
+                    {
+                        dataGridView2.Rows.Add(dataGridView2.Rows.Count, f.Properties.DEVICELISTENTRY_PLANT, "--");
+                        //listBox1.Items.Add(f.Properties.DEVICELISTENTRY_PLANT);
+                    }
+                   // dataGridView1.Rows.Add(j, f.Properties.DEVICELISTENTRY_PARTNR, f.Properties.DEVICELISTENTRY_COUNTALLOWED);
+                }
+            }
+
+        }
+
+        private void dataGridView2_SelectionChanged(object sender, EventArgs e)
+        {
             filtpart2.Clear();
             dataGridView1.Rows.Clear();
             bool desloctrue = false;
-            foreach(part f1 in filtpart)
+            foreach (DeviceListEntry f1 in Devlist)
             {
-                if (listBox1.SelectedIndex == 0)
+                if (dataGridView2.CurrentRow.Index == 0)
                 {
                     desloctrue = false;
                     foreach (part f2 in filtpart2)
                     {
-                        if (f1.partnr == f2.partnr)
+                        if (f1.Properties.DEVICELISTENTRY_PARTNR == f2.partnr)
                         {
-                            f2.pcount += f1.pcount;
+                            f2.pcount += f1.Properties.DEVICELISTENTRY_COUNTALLOWED;
                             desloctrue = true;
                             break;
                         }
                     }
-                    if (desloctrue==false)
+                    if (desloctrue == false)
                     {
-                        filtpart2.Add(new part() { partnr = f1.partnr, pcount = f1.pcount});
+                        filtpart2.Add(new part() { partnr = f1.Properties.DEVICELISTENTRY_PARTNR, pcount = f1.Properties.DEVICELISTENTRY_COUNTALLOWED });
                     }
-                   }
+                }
                 else
                 {
 
-                    if (listBox1.SelectedItem.ToString() == f1.design)
+                    if (dataGridView2.CurrentCell.Value.ToString() == f1.Properties.DEVICELISTENTRY_PLANT)
                     {
                         desloctrue = false;
                         foreach (part f2 in filtpart2)
                         {
-                            if (f1.partnr == f2.partnr)
+                            if (f1.Properties.DEVICELISTENTRY_PARTNR == f2.partnr)
                             {
-                                f2.pcount += f1.pcount;
+                                f2.pcount += f1.Properties.DEVICELISTENTRY_COUNTALLOWED;
                                 desloctrue = true;
                                 break;
                             }
                         }
                         if (desloctrue == false)
                         {
-                            filtpart2.Add(new part() { partnr = f1.partnr, pcount = f1.pcount });
+                            filtpart2.Add(new part() { partnr = f1.Properties.DEVICELISTENTRY_PARTNR, pcount = f1.Properties.DEVICELISTENTRY_COUNTALLOWED });
                         }
 
                     }
                 }
-            }
-            for (int j=0;j<filtpart2.Count;j++)
-            {
-                dataGridView1.Rows.Add(j+1, filtpart2[j].partnr, filtpart2[j].pcount);
-            }
 
+            }
+            for (int j = 0; j < filtpart2.Count; j++)
+            {
+                dataGridView1.Rows.Add(j + 1, filtpart2[j].partnr, filtpart2[j].pcount);
+            }
         }
 
-        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        private void dataGridView2_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
 
         }

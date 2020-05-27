@@ -109,7 +109,7 @@ namespace Eplan.EplAddIn.KAZPROMMenu
                         {
                             devl.Name = f.Name;
                             devl.Page = Lpage[p].Name;
-                            devl.Designation = f.Properties.DESIGNATION_LOCATION;
+                            devl.Designation = f.Properties.DESIGNATION_FULLLOCATION;
                             if (arcount3d == articref.Count) { devl.notfull = false; } else { devl.notfull = true; }
                             dev.Add(devl);
                         }
@@ -142,7 +142,7 @@ namespace Eplan.EplAddIn.KAZPROMMenu
                         {
                             devl.Name = ft.Name;
                             devl.Page = Lpage[p].Name;
-                            devl.Designation = ft.Properties.DESIGNATION_LOCATION;
+                            devl.Designation = ft.Properties.DESIGNATION_FULLLOCATION;
                             if (arcount3d == articref.Count) { devl.notfull = false; } else { devl.notfull = true; }
                             dev.Add(devl);
                         }
