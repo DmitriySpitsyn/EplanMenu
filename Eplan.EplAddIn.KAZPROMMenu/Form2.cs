@@ -28,56 +28,65 @@ namespace Eplan.EplAddIn.KAZPROMMenu
         }
         public List<part> filtpart = new List<part>();
         public List<part> filtpart2 = new List<part>();
+        BackgroundWorker bw;
         private void button1_Click(object sender, EventArgs e)
         {
+            bw = new BackgroundWorker();
+            bw.DoWork += (obj, ea)=>partup(1);
+            bw.RunWorkerAsync();
 
+           
+        }
+
+       private async void partup(int times)
+        {
             using (LockingStep oLS = new LockingStep())
             { // ... доступ к данным P8 ...
-                
+
                 SelectionSet Set = new SelectionSet();
                 Project CurrentProject = Set.GetCurrentProject(true);
-                StorableObject[] storableObjects = Set.Selection; 
+                StorableObject[] storableObjects = Set.Selection;
                 List<Page> Lpage = Set.GetSelectedPages().ToList();
                 List<Function> func = new List<Function>();
                 List<Terminal> term = new List<Terminal>();
                 FunctionsFilter oterfilt = new FunctionsFilter();
-                
-                List < ArticleReference > articref= new List<ArticleReference>();
+
+                List<ArticleReference> articref = new List<ArticleReference>();
                 DMObjectsFinder dmObjectsFinder = new DMObjectsFinder(CurrentProject);
                 //List<Eplan.EplApi.DataModel.EObjects.PLC> PLCs = new List<Eplan.EplApi.DataModel.EObjects.PLC>();
                 //FunctionsFilter ofuncfilter = new FunctionsFilter();
                 filtpart.Clear();
                 bool searchPLC = false;
-                progressBar1.Maximum = Lpage.Count-1;
-                for (int p=0;p<Lpage.Count;p++)
+                progressBar1.Maximum = Lpage.Count - 1;
+                for (int p = 0; p < Lpage.Count; p++)
                 {
                     progressBar1.Value = p;
                     func = Lpage[p].Functions.ToList();
-                    foreach(Function f in func)
+                    foreach (Function f in func)
                     {
                         if (f.IsMainFunction != true) { continue; }
                         articref = f.ArticleReferences.ToList();
-                        foreach(ArticleReference ar in articref)
+                        foreach (ArticleReference ar in articref)
                         {
 
                             searchPLC = false;
-                            
+
                             foreach (part cpart in filtpart)
                             {
-                                if ((cpart.partnr == ar.PartNr) &(f.Properties.DESIGNATION_LOCATION == cpart.design))
-                                   {
+                                if ((cpart.partnr == ar.PartNr) & (f.Properties.DESIGNATION_FULLLOCATION == cpart.design))
+                                {
                                     searchPLC = true;
-                                    
+
                                     cpart.pcount += ar.Properties.ARTICLEREF_COUNT;
-                                        break;
-                                    }
+                                    break;
+                                }
 
                             }
                             if (searchPLC == false)
                             {
 
 
-                                filtpart.Add(new part() { partnr = ar.PartNr, pcount = ar.Properties.ARTICLEREF_COUNT, design = f.Properties.DESIGNATION_LOCATION });
+                                filtpart.Add(new part() { partnr = ar.PartNr, pcount = ar.Properties.ARTICLEREF_COUNT, design = f.Properties.DESIGNATION_FULLLOCATION });
                             }
 
                         }
@@ -93,10 +102,10 @@ namespace Eplan.EplAddIn.KAZPROMMenu
                             searchPLC = false;
                             foreach (part cpart in filtpart)
                             {
-                                if ((cpart.partnr == art.PartNr) & (ft.Properties.DESIGNATION_LOCATION == cpart.design))
+                                if ((cpart.partnr == art.PartNr) & (ft.Properties.DESIGNATION_FULLLOCATION == cpart.design))
                                 {
                                     searchPLC = true;
-                                    
+
                                     cpart.pcount += art.Properties.ARTICLEREF_COUNT;
                                     break;
                                 }
@@ -104,18 +113,18 @@ namespace Eplan.EplAddIn.KAZPROMMenu
                             if (searchPLC == false)
                             {
 
-                                filtpart.Add(new part() { partnr = art.PartNr, pcount = art.Properties.ARTICLEREF_COUNT, design = ft.Properties.DESIGNATION_LOCATION });
+                                filtpart.Add(new part() { partnr = art.PartNr, pcount = art.Properties.ARTICLEREF_COUNT, design = ft.Properties.DESIGNATION_FULLLOCATION });
                             }
                         }
                     }
-                    
-                }
-               
-               /* for (int i=0;i<filtpart.Count;i++)
-                {
-                    listBox1.Items.Add(i.ToString()+" "+filtpart[i].partnr + "  " + filtpart[i].pcount.ToString() + "***" + filtpart[i].design);
 
-                }*/
+                }
+
+                /* for (int i=0;i<filtpart.Count;i++)
+                 {
+                     listBox1.Items.Add(i.ToString()+" "+filtpart[i].partnr + "  " + filtpart[i].pcount.ToString() + "***" + filtpart[i].design);
+
+                 }*/
                 listBox1.Items.Clear();
                 listBox1.Items.Add("Все_");
                 for (int i = 0; i < filtpart.Count; i++)
@@ -137,9 +146,8 @@ namespace Eplan.EplAddIn.KAZPROMMenu
 
 
             }
-        }
 
-       
+        }
         private void listBox1_MouseDoubleClick(object sender, MouseEventArgs e)
         {
 
@@ -147,8 +155,9 @@ namespace Eplan.EplAddIn.KAZPROMMenu
 
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            listBox2.Items.Clear();
+           
             filtpart2.Clear();
+            dataGridView1.Rows.Clear();
             bool desloctrue = false;
             foreach(part f1 in filtpart)
             {
@@ -192,10 +201,16 @@ namespace Eplan.EplAddIn.KAZPROMMenu
                     }
                 }
             }
-            foreach(part f2 in filtpart2)
+            for (int j=0;j<filtpart2.Count;j++)
             {
-                listBox2.Items.Add(f2.partnr + "       " + f2.pcount);
+                dataGridView1.Rows.Add(j+1, filtpart2[j].partnr, filtpart2[j].pcount);
             }
+
+        }
+
+        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+
         }
     }
 }

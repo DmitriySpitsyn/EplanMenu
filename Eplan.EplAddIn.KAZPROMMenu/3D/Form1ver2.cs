@@ -44,7 +44,15 @@ namespace Eplan.EplAddIn.KAZPROMMenu
         public int countelement=0;
 
         string projectname = "";
+        BackgroundWorker bw;
         private void button1_Click(object sender, EventArgs e)
+        {
+            bw = new BackgroundWorker();
+            bw.DoWork += (obj, ea) => Update3dPlace(1);
+            bw.RunWorkerAsync();
+            
+        }
+        private async void Update3dPlace(int times)
         {
             using (LockingStep oLS = new LockingStep())
             {  // ... доступ к данным P8 ...
@@ -72,15 +80,15 @@ namespace Eplan.EplAddIn.KAZPROMMenu
                     func = Lpage[p].Functions.ToList();
                     foreach (Function f in func)
                     {
-                        if (checkBox1.Checked==true)
+                        if (checkBox1.Checked == true)
                         {
                             if (f.IsMainFunction != true) { continue; }
                         }
                         else
                         {
-                            if ((f.IsMainFunction != true)|| (f.Properties.FUNC_CATEGORY_GROUP_ID=="400/1/1")) { continue; }
+                            if ((f.IsMainFunction != true) || (f.Properties.FUNC_CATEGORY_GROUP_ID == "400/1/1")) { continue; }
                         }
-                        
+
                         countelement += 1;
                         articref = f.ArticleReferences.ToList();
                         searchPLC = false;
@@ -97,12 +105,12 @@ namespace Eplan.EplAddIn.KAZPROMMenu
                             }
                         }
 
-                        if ((searchPLC == true)||(articref.Count==0))
+                        if ((searchPLC == true) || (articref.Count == 0))
                         {
                             devl.Name = f.Name;
                             devl.Page = Lpage[p].Name;
                             devl.Designation = f.Properties.DESIGNATION_LOCATION;
-                            if (arcount3d== articref.Count) { devl.notfull = false; } else { devl.notfull = true; }
+                            if (arcount3d == articref.Count) { devl.notfull = false; } else { devl.notfull = true; }
                             dev.Add(devl);
                         }
                     }
@@ -119,7 +127,7 @@ namespace Eplan.EplAddIn.KAZPROMMenu
                         arcount3d = 0;
                         foreach (ArticleReference ar in articref)
                         {
-                            if (ar.Properties.ARTICLEREF_COUNT_NOTPLACED_3D !=0)
+                            if (ar.Properties.ARTICLEREF_COUNT_NOTPLACED_3D != 0)
                             {
                                 searchPLC = true;
                                 if (ar.Properties.ARTICLEREF_COUNT - ar.Properties.ARTICLEREF_COUNT_NOTPLACED_3D == 0)
@@ -127,7 +135,7 @@ namespace Eplan.EplAddIn.KAZPROMMenu
                                     arcount3d += 1;
                                 }
                             }
-                            
+
                         }
 
                         if ((searchPLC == true) || (articref.Count == 0))
@@ -140,9 +148,10 @@ namespace Eplan.EplAddIn.KAZPROMMenu
                         }
                     }
                 }
-                updategui();
 
+                updategui();
             }
+
         }
 
 
