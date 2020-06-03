@@ -47,12 +47,16 @@ namespace Eplan.EplAddIn.KAZPROMMenu
         BackgroundWorker bw;
         private void button1_Click(object sender, EventArgs e)
         {
+
             bw = new BackgroundWorker();
-            bw.DoWork += (obj, ea) => Update3dPlace(1);
+            if (bw.IsBusy) return;
+            bw.WorkerSupportsCancellation = true;
+            bw.DoWork += new DoWorkEventHandler(bw_DoWork);
             bw.RunWorkerAsync();
-            
+            button1.Enabled = false;
+
         }
-        private async void Update3dPlace(int times)
+        void bw_DoWork(object sender, DoWorkEventArgs e)
         {
             using (LockingStep oLS = new LockingStep())
             {  // ... доступ к данным P8 ...
@@ -150,6 +154,7 @@ namespace Eplan.EplAddIn.KAZPROMMenu
                 }
 
                 updategui();
+                button1.Enabled = true;
             }
 
         }

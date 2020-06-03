@@ -10,6 +10,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Eplan.EplApi.DataModel.EObjects;
+using Eplan.EplApi.Base;
+using Eplan.EplApi.DataModel.E3D;
+using Eplan.EplApi.MasterData;
 
 namespace Eplan.EplAddIn.KAZPROMMenu
 {
@@ -22,112 +25,429 @@ namespace Eplan.EplAddIn.KAZPROMMenu
         }
         public class part
         {
-            public string partnr { get; set; }
-            public int pcount { get; set; }
-            public PropertyValue design { get; set; }
-            public PropertyValue note { get; set; }
+            public string partnr { get; set; }//Заказной номер
+            public int pcount { get; set; } //Количество
+            public int spare { get; set; } //Резерв
+            public string design { get; set; }//Название местоположения
+            public string descrip { get; set; } //описание изделия
+            public string note { get; set; }// описание местоположения
+            public string erpn { get; set; }// номер ERP.Артикул в 1С
+            public int price1 { get; set; }// цена в 1 валюте(тенге)
+            public int price2 { get; set; }// цена в 2 валюте(евро)
         }
+        public class work{
+            public int id { get; set; }//Номер позиции
+            public string NameKit { get; set; }//Название комплекта
+            public int pcount { get; set; } //Количество 
+            public List<part> parts { get; set; } //Список запчастей в комплекте
+        }
+        public class SpecPrice
+        {
+            public int id { get; set; }//Номер позиции
+            public string NameKit { get; set; }//Название комплекта
+            public int pcount { get; set; } //Количество 
+            public long Price1 { get; set; } //Цена валюта1  
+            public long Price2 { get; set; } //Цена валюта2
+            public long COSTPrice1 { get; set; } //Стоимость валюта1 
+            public long COSTPrice2 { get; set; } //Стоимость валюта2    
+        }
+        public List<work> MainList= new List<work>();
         public List<part> filtpart = new List<part>();
         public List<part> filtpart2 = new List<part>();
+       // public List<part> filtdevice = new List<part>();
+        public List<part> filtdevice2 = new List<part>();
+        public List<SpecPrice> SpecALL = new List<SpecPrice>();
         public List <DeviceListEntry> Devlist=new List<DeviceListEntry>() ;
-        BackgroundWorker bw;
+        public bool blockupdatelist=false;
+        BackgroundWorker bw ;
         private void button1_Click(object sender, EventArgs e)
         {
-            bw = new BackgroundWorker();
-            bw.DoWork += (obj, ea)=>partup(1);
-            bw.RunWorkerAsync();
+            
 
-           
+
         }
 
-       private async void partup(int times)
+
+        void bw_DoWork(object sender, DoWorkEventArgs e)
         {
             using (LockingStep oLS = new LockingStep())
             { // ... доступ к данным P8 ...
 
                 SelectionSet Set = new SelectionSet();
                 Project CurrentProject = Set.GetCurrentProject(true);
-                StorableObject[] storableObjects = Set.Selection;
+                //StorableObject[] storableObjects = Set.Selection;
                 List<Page> Lpage = Set.GetSelectedPages().ToList();
                 List<Function> func = new List<Function>();
+                List<Function3D> func3d = new List<Function3D>();
                 List<Terminal> term = new List<Terminal>();
                 FunctionsFilter oterfilt = new FunctionsFilter();
-
+                MultiLangString mlstring = new MultiLangString();
                 List<ArticleReference> articref = new List<ArticleReference>();
                 DMObjectsFinder dmObjectsFinder = new DMObjectsFinder(CurrentProject);
+                Functions3DFilter f3dfilter = new Functions3DFilter();
+                
+                func3d = dmObjectsFinder.GetFunctions3D(f3dfilter).ToList();
                 //List<Eplan.EplApi.DataModel.EObjects.PLC> PLCs = new List<Eplan.EplApi.DataModel.EObjects.PLC>();
                 //FunctionsFilter ofuncfilter = new FunctionsFilter();
                 filtpart.Clear();
                 bool searchPLC = false;
                 progressBar1.Maximum = Lpage.Count - 1;
-                for (int p = 0; p < Lpage.Count; p++)
+                blockupdatelist = true;
+                ArticleReferencesFilter arfilter = new ArticleReferencesFilter();
+                articref = dmObjectsFinder.GetArticleReferences(arfilter).ToList();
+                string erpbuf;
+                int price1;
+                int price2;
+                string bufdecp = "";
+                progressBar1.Maximum = articref.Count;
+                progressBar1.Value = 0;
+                             
+                DeviceService devservice = new DeviceService();
+                Devlist = devservice.GetAllDeviceListItems(CurrentProject).ToList();
+                MainList.Clear();
+                dataGridView2.Rows.Clear();
+                MainList.Add(new work()
                 {
-                    progressBar1.Value = p;
-                    func = Lpage[p].Functions.ToList();
-                    foreach (Function f in func)
+                    id = 0,
+                    NameKit = "Общий список изделий",
+                    pcount =0,
+                    parts = new List<part>()
+                });
+                bool searchgesign = false;
+                //progressBar1.Maximum = Devlist.Count+1;
+                string buf = "";
+                blockupdatelist = true;
+                #region KITFound// Ищем Комплекты
+                {
+                    foreach (DeviceListEntry f in Devlist)
                     {
-                        if (f.IsMainFunction != true) { continue; }
-                        articref = f.ArticleReferences.ToList();
-                        foreach (ArticleReference ar in articref)
+                        try
                         {
-
-                            searchPLC = false;
-
-                            foreach (part cpart in filtpart)
-                            {
-                                if ((cpart.partnr == ar.PartNr) & (f.Properties.DESIGNATION_FULLLOCATION == cpart.design))
-                                {
-                                    searchPLC = true;
-
-                                    cpart.pcount += ar.Properties.ARTICLEREF_COUNT;
-                                    break;
-                                }
-
-                            }
-                            if (searchPLC == false)
-                            {
-
-
-                                filtpart.Add(new part() { partnr = ar.PartNr, pcount = ar.Properties.ARTICLEREF_COUNT, design = f.Properties.DESIGNATION_FULLLOCATION });
-                            }
+                            if (f.Properties.DEVICELISTENTRY_PARTNR.ToString() == "") { continue; }
+                        }
+                        catch (EmptyPropertyException)
+                        {
+                            continue;
 
                         }
-                    }
-                    oterfilt.Page = Lpage[p];
-                    term = dmObjectsFinder.GetTerminals(oterfilt).ToList();
-                    foreach (Terminal ft in term)
-                    {
-                        if (ft.IsMainTerminal != true) { continue; }
-                        articref = ft.ArticleReferences.ToList();
-                        foreach (ArticleReference art in articref)
+
+
+                        searchgesign = false;
+                        buf = "";
+
+                        for (int s = 0; s < f.Properties.DEVICELISTENTRY_PARTNR.ToString().Length; s++)
                         {
-                            searchPLC = false;
-                            foreach (part cpart in filtpart)
-                            {
-                                if ((cpart.partnr == art.PartNr) & (ft.Properties.DESIGNATION_FULLLOCATION == cpart.design))
-                                {
-                                    searchPLC = true;
+                            if (f.Properties.DEVICELISTENTRY_PARTNR.ToString()[s] == '.')
 
-                                    cpart.pcount += art.Properties.ARTICLEREF_COUNT;
-                                    break;
-                                }
+                            {
+                                break;
                             }
-                            if (searchPLC == false)
+                            else
                             {
-
-                                filtpart.Add(new part() { partnr = art.PartNr, pcount = art.Properties.ARTICLEREF_COUNT, design = ft.Properties.DESIGNATION_FULLLOCATION });
+                                buf += f.Properties.DEVICELISTENTRY_PARTNR.ToString()[s];
                             }
                         }
+
+                        if (buf == "KIT")
+                        {
+                            //filtdevice.Add(new part() { partnr = f.Properties.DEVICELISTENTRY_PARTNR.ToString().Remove(0, 4), pcount = f.Properties.DEVICELISTENTRY_COUNTALLOWED });
+                            MainList.Add(new work()
+                            {
+                                id = 0,
+                                NameKit = f.Properties.DEVICELISTENTRY_PARTNR.ToString().Remove(0, 4),
+                                pcount = f.Properties.DEVICELISTENTRY_COUNTALLOWED,
+                                parts = new List<part>()
+                            });
+                            continue;
+                        }
+
                     }
 
                 }
+                #endregion
+                #region FoundDeviceforKIT// Заполняем комплектность
+                {
+                    foreach (DeviceListEntry f1 in Devlist)
+                    {
+                        if (MainList.Count == 0) { break; }
+                        try
+                        {
+                            if (f1.Properties.DEVICELISTENTRY_PARTNR.ToString() == "") { continue; }
+                        }
+                        catch (EmptyPropertyException)
+                        {
+                            continue;
+                        }
+                        buf = "";
+                        for (int s = 0; s < f1.Properties.DEVICELISTENTRY_PARTNR.ToString().Length; s++)
+                        {
+                            if (f1.Properties.DEVICELISTENTRY_PARTNR.ToString()[s] == '.')
 
-                /* for (int i=0;i<filtpart.Count;i++)
-                 {
-                     listBox1.Items.Add(i.ToString()+" "+filtpart[i].partnr + "  " + filtpart[i].pcount.ToString() + "***" + filtpart[i].design);
+                            {
+                                break;
+                            }
+                            else
+                            {
+                                buf += f1.Properties.DEVICELISTENTRY_PARTNR.ToString()[s];
+                            }
+                        }
 
-                 }*/
-          
+                        //MessageBox.Show(buf + "---" + buf.Length.ToString() + "---" + f1.Properties.DEVICELISTENTRY_PARTNR.ToString());
+                        if (buf == "KIT")
+                        {
+                            continue;
+                        }
+                        bool desloctrue = false;
+                        int k = 1;// коэфициент умножения на комплекты
+                                  //MessageBox.Show(filtpart.Count.ToString() + "---" + f1.Properties.DEVICELISTENTRY_PLANT);
+                        foreach (work KIT in MainList)
+                        {
+                            // MessageBox.Show("--" + KIT.partnr + "--" + k.ToString() + "--" + f1.Properties.DEVICELISTENTRY_PLANT + "--" + f1.Properties.DEVICELISTENTRY_PARTNR);
+
+                            if (KIT.NameKit == f1.Properties.DEVICELISTENTRY_PLANT)
+                            {
+                                desloctrue = false;
+                                foreach (part f2 in KIT.parts)
+                                {
+
+                                    if (f1.Properties.DEVICELISTENTRY_PARTNR == f2.partnr)
+                                    {
+                                        f2.pcount += f1.Properties.DEVICELISTENTRY_COUNTALLOWED ;
+                                        desloctrue = true;
+                                        break;
+                                    }
+                                }
+                                if (desloctrue == false)
+                                {
+                                    try
+                                    {
+                                        bufdecp = f1.Properties.DEVICELISTENTRY_DESCRIPTION;
+                                    }
+                                    catch (EmptyPropertyException)
+                                    {
+
+                                    }
+                                    KIT.parts.Add(new part() { partnr = f1.Properties.DEVICELISTENTRY_PARTNR, pcount = f1.Properties.DEVICELISTENTRY_COUNTALLOWED , descrip = bufdecp });
+                                }
+                                k = KIT.pcount;
+                                break;
+                            }
+                        }
+                            foreach (part f2 in MainList[0].parts)
+                            {
+                            desloctrue = false;
+                            if (f1.Properties.DEVICELISTENTRY_PARTNR == f2.partnr)
+                                {
+                                    f2.pcount += (f1.Properties.DEVICELISTENTRY_COUNTALLOWED * k);
+                                    desloctrue = true;
+                                    break;
+                                }
+                            }
+                            if (desloctrue == false)
+                            {
+                                try
+                                {
+                                    bufdecp = f1.Properties.DEVICELISTENTRY_DESCRIPTION;
+                                }
+                                catch (EmptyPropertyException)
+                                {
+
+                                }
+                                MainList[0].parts.Add(new part() { partnr = f1.Properties.DEVICELISTENTRY_PARTNR, pcount = f1.Properties.DEVICELISTENTRY_COUNTALLOWED * k, descrip = bufdecp });
+                            }
+                        
+                    }
+                    }
+                #endregion
+                
+                    for (int j = 0; j < MainList.Count; j++)
+                {
+                    MainList[j].id = j;
+                    dataGridView2.Rows.Add(MainList[j].id, MainList[j].NameKit, MainList[j].pcount);
+                    if (j == 0) continue;
+                    SpecALL.Add(new SpecPrice() {
+                        id = MainList[j].id,
+                        NameKit = MainList[j].NameKit,
+                        pcount = MainList[j].pcount,
+                        Price1 = 0,
+                        Price2 = 0,
+                        COSTPrice1 = 0,
+                        COSTPrice2 = 0 });
+                }
+                #region //Сравниваю с проектом
+                {
+                    foreach (ArticleReference ar in articref)
+                    {
+                        //List<StorableObject> storableObjects = ar.CrossReferencedObjectsAll.ToList();
+                        //StorableObject[] storableObjects =ar.CrossReferencedObjectsAll
+                        searchPLC = false;
+                        //listBox1.Items.Add(ar.PartNr + "  " + ar.Properties.ARTICLEREF_COUNT);
+
+
+                        foreach (part cpart in filtpart)
+                        {
+                            
+                            if ((cpart.partnr == ar.PartNr) & (ar.Properties.DESIGNATION_FULLLOCATION == cpart.design))
+                            {
+                                searchPLC = true;
+                                cpart.pcount += ar.Properties.ARTICLEREF_COUNT;
+                                break;
+                            }
+
+                        }
+                        if (searchPLC == false)
+                        {
+
+                            mlstring = ar.Properties.DESIGNATION_FULLLOCATION_DESCR.ToMultiLangString();
+                           /* try
+                            {
+                                erpbuf = ar.Properties.ARTICLE_ERPNR;
+                            }
+                            catch (EmptyPropertyException)
+                            {
+                                erpbuf = "";
+
+                            }
+                            try
+                            {
+                                price1 = ar.Properties.ARTICLE_SALESPRICE_1;
+                            }
+                            catch (EmptyPropertyException)
+                            {
+                                price1 = 0;
+
+                            }
+                            try
+                            {
+                                price2 = ar.Properties.ARTICLE_SALESPRICE_2;
+                            }
+                            catch (EmptyPropertyException)
+                            {
+                                price2 = 0;
+
+                            }*/
+                            filtpart.Add(new part()
+                            {
+                                partnr = ar.PartNr,
+                                pcount = ar.Properties.ARTICLEREF_COUNT,
+                                design = ar.Properties.DESIGNATION_FULLLOCATION,
+                                note = mlstring.GetStringToDisplay(ISOCode.Language.L_ru_RU),
+                                /*erpn = erpbuf,
+                                price1 = price1,
+                                price2 = price2,*/
+                            });
+
+
+
+
+                        }
+
+
+
+                        progressBar1.Value++;
+                    }
+
+                    // Подсчет резерва 
+                    string bufname1 = "";
+                    string bufname2 = "";
+                    foreach (work KIT in MainList)
+                    {
+                        foreach (part rowkit in KIT.parts)
+                        {
+                            rowkit.spare = rowkit.pcount;
+                            bufname1 = rowkit.partnr;
+                            bufname1 = bufname1.Replace(" ", "");
+                            foreach (part cpart in filtpart)
+                            {
+                                bufname2 = cpart.partnr;
+                                bufname2 = bufname2.Replace(" ", "");
+                                if (bufname1 == bufname2)
+                                {
+                                    rowkit.spare -= cpart.pcount;
+                                }
+                            }                         
+                        }
+                    }
+                   
+
+
+                }
+                #endregion
+                #region // Расставление ERP и формирование цен
+                {
+                    progressBar1.Maximum += MainList[0].parts.Count;
+                    MDPartsManagement pm = new MDPartsManagement();
+                    MDPartsDatabase db = pm.OpenDatabase();
+                    MDPart mdpart;
+                    //progressBar1.Value = 0;
+                    foreach (part rowkit in MainList[0].parts)
+                    {
+                        mdpart = db.GetPart(rowkit.partnr);
+                        progressBar1.Value++;
+                        try
+                        {
+                            //rowkit.spare -= cpart.pcount;
+                            rowkit.erpn = mdpart.Properties.ARTICLE_ERPNR;
+                            rowkit.price1 = mdpart.Properties.ARTICLE_SALESPRICE_1;
+                            rowkit.price2 = mdpart.Properties.ARTICLE_SALESPRICE_2;
+                        }
+                        catch (NullReferenceException)
+                        {
+                            continue;
+                        }
+
+                    }
+                    foreach (work KIT in MainList)
+                    {
+                        if (KIT.id == 0) continue;
+                        foreach (part rowkit in KIT.parts)
+                        {
+                            foreach (part mainrowkit in MainList[0].parts)
+                            {
+                                if (mainrowkit.partnr == rowkit.partnr)
+                                {
+                                    rowkit.erpn = mainrowkit.erpn;
+                                    rowkit.price1 = mainrowkit.price1;
+                                    rowkit.price2 = mainrowkit.price2;
+                                }
+
+                            }
+                        }
+                    }
+                    foreach (SpecPrice price in SpecALL)
+                    {
+                        foreach (work KIT in MainList)
+
+                        {
+                            if (price.id == KIT.id)
+                            {
+                                foreach (part rowkit in KIT.parts)
+                                {
+                                    price.Price1 += (rowkit.price1 * rowkit.pcount);
+                                    price.Price2 += (rowkit.price2 * rowkit.pcount);
+
+                                }
+                                price.COSTPrice1 = price.Price1 * price.pcount;
+                                price.COSTPrice2 = price.Price2 * price.pcount;
+                            }
+                        }
+                    }
+                    dataGridView4.Rows.Clear();
+                    foreach (SpecPrice row in SpecALL)
+                    {
+                        dataGridView4.Rows.Add(
+                            row.id,
+                            row.NameKit,
+                            row.pcount,
+                            row.Price1,
+                            row.Price2,
+                            row.COSTPrice1,
+                            row.COSTPrice2);
+                    }
+                }
+                #endregion
+                button3.Enabled = true;
+                blockupdatelist = false;
 
             }
 
@@ -146,6 +466,7 @@ namespace Eplan.EplAddIn.KAZPROMMenu
 
         private void button2_Click(object sender, EventArgs e)
         {
+            
             using (LockingStep oLS = new LockingStep())
             { // ... доступ к данным P8 ...
 
@@ -162,100 +483,190 @@ namespace Eplan.EplAddIn.KAZPROMMenu
 
         private void button3_Click(object sender, EventArgs e)
         {
-            using (LockingStep oLS = new LockingStep())
-            { // ... доступ к данным P8 ...
 
-               // dataGridView1.Rows.Clear();
-                SelectionSet Set = new SelectionSet();
-                Project CurrentProject = Set.GetCurrentProject(true);
-                DeviceService devservice = new DeviceService();
-                Devlist = devservice.GetAllDeviceListItems(CurrentProject).ToList();
-                int j = 0;
-                dataGridView2.Rows.Clear();
-                dataGridView2.Rows.Add(1, "Общий список изделий", "---");
-                bool searchgesign = false;
-                progressBar1.Maximum = Devlist.Count;
-                foreach(DeviceListEntry f in Devlist)
-                {
-                    progressBar1.Value += 1;
-                    searchgesign = false;
-                    for (int i=0;i< dataGridView2.Rows.Count; i++)
-                    {
-                        //MessageBox.Show(dataGridView2[0, i].Value.ToString()+" "+ dataGridView2[1, i].Value.ToString()+" " + dataGridView2[2, i].Value.ToString());
-                        if ((f.Properties.DEVICELISTENTRY_PLANT==dataGridView2[1,i].Value .ToString())& (dataGridView2[1, i].Value!=null))
-                        {
-                            searchgesign = true;
-                            break;
-                        }
-                    }
-                    if (searchgesign == false)
-                    {
-                        dataGridView2.Rows.Add(dataGridView2.Rows.Count, f.Properties.DEVICELISTENTRY_PLANT, "--");
-                        //listBox1.Items.Add(f.Properties.DEVICELISTENTRY_PLANT);
-                    }
-                   // dataGridView1.Rows.Add(j, f.Properties.DEVICELISTENTRY_PARTNR, f.Properties.DEVICELISTENTRY_COUNTALLOWED);
-                }
-            }
+            bw = new BackgroundWorker();
+            if (bw.IsBusy) return;
+            bw.WorkerSupportsCancellation = true;
+            bw.DoWork += new DoWorkEventHandler(bw_DoWork); 
+            bw.RunWorkerAsync();
+            button3.Enabled = false;
+            
+            //partup(1);
+
 
         }
 
         private void dataGridView2_SelectionChanged(object sender, EventArgs e)
         {
-            filtpart2.Clear();
+            //filtdevice2.Clear();
             dataGridView1.Rows.Clear();
             bool desloctrue = false;
-            foreach (DeviceListEntry f1 in Devlist)
-            {
-                if (dataGridView2.CurrentRow.Index == 0)
+            string buf = "";
+
+            if (blockupdatelist == true) { return; }
+
+            if (dataGridView2.CurrentRow.Index == 0)
                 {
-                    desloctrue = false;
-                    foreach (part f2 in filtpart2)
-                    {
-                        if (f1.Properties.DEVICELISTENTRY_PARTNR == f2.partnr)
-                        {
-                            f2.pcount += f1.Properties.DEVICELISTENTRY_COUNTALLOWED;
-                            desloctrue = true;
-                            break;
-                        }
-                    }
-                    if (desloctrue == false)
-                    {
-                        filtpart2.Add(new part() { partnr = f1.Properties.DEVICELISTENTRY_PARTNR, pcount = f1.Properties.DEVICELISTENTRY_COUNTALLOWED });
-                    }
+                filtdevice2 =  MainList[0].parts;
+                //MessageBox.Show(dataGridView2.CurrentRow.Index.ToString()+"---"+ filtdevice2.Count.ToString());
                 }
                 else
                 {
-
-                    if (dataGridView2.CurrentCell.Value.ToString() == f1.Properties.DEVICELISTENTRY_PLANT)
+                    foreach(work f1 in MainList)
+                {
+                    if (dataGridView2[1, dataGridView2.CurrentRow.Index].Value.ToString() == f1.NameKit)
                     {
-                        desloctrue = false;
-                        foreach (part f2 in filtpart2)
-                        {
-                            if (f1.Properties.DEVICELISTENTRY_PARTNR == f2.partnr)
-                            {
-                                f2.pcount += f1.Properties.DEVICELISTENTRY_COUNTALLOWED;
-                                desloctrue = true;
-                                break;
-                            }
-                        }
-                        if (desloctrue == false)
-                        {
-                            filtpart2.Add(new part() { partnr = f1.Properties.DEVICELISTENTRY_PARTNR, pcount = f1.Properties.DEVICELISTENTRY_COUNTALLOWED });
-                        }
-
+                        filtdevice2 = f1.parts;
+                        //MessageBox.Show(dataGridView2.CurrentRow.Index.ToString() + "---" + filtdevice2.Count.ToString());
+                        break;
                     }
                 }
+                    
+                }
 
-            }
-            for (int j = 0; j < filtpart2.Count; j++)
-            {
-                dataGridView1.Rows.Add(j + 1, filtpart2[j].partnr, filtpart2[j].pcount);
-            }
+                for (int j = 0; j < filtdevice2.Count; j++)
+                {
+                   
+                if (dataGridView2.CurrentRow.Index == 0)
+                {
+                    dataGridView1.Columns["Column4"].Visible = true;
+                    /*dataGridView1.Columns["ERP"].Visible = true;
+                    dataGridView1.Columns["Price1"].Visible = true;
+                    dataGridView1.Columns["Price2"].Visible = true;*/
+                    dataGridView1.Rows.Add(
+                        j + 1,
+                        filtdevice2[j].partnr,
+                        filtdevice2[j].descrip,
+                        filtdevice2[j].pcount,
+                        filtdevice2[j].spare,
+                        filtdevice2[j].erpn,
+                        filtdevice2[j].price1,
+                        filtdevice2[j].price2);
+                    if (filtdevice2[j].spare < 0)
+                    {
+                        dataGridView1["Column4", dataGridView1.Rows.Count - 1].Style.BackColor = Color.Red;
+                    }
+                    else
+                    {
+                        if (filtdevice2[j].spare == 0)
+                        {
+                            dataGridView1["Column4", dataGridView1.Rows.Count - 1].Style.BackColor = Color.Green;
+                        }
+                        else
+                        {
+                            dataGridView1["Column4", dataGridView1.Rows.Count - 1].Style.BackColor = Color.Yellow;
+                        }
+                            
+                    }
+                }
+                
+                else
+                {
+                    dataGridView1.Columns["Column4"].Visible = false;
+                    /* dataGridView1.Columns["ERP"].Visible = false;
+                     dataGridView1.Columns["Price1"].Visible = false;
+                     dataGridView1.Columns["Price2"].Visible = false;*/
+                    dataGridView1.Rows.Add(
+                        j + 1,
+                        filtdevice2[j].partnr,
+                        filtdevice2[j].descrip,
+                        filtdevice2[j].pcount,
+                        "",
+                        filtdevice2[j].erpn,
+                        filtdevice2[j].price1,
+                        filtdevice2[j].price2);
+                }
+                    
+                }
+            
         }
 
         private void dataGridView2_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
 
+        }
+
+        private void progressBar1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void dataGridView1_SelectionChanged(object sender, EventArgs e)
+        {
+            if (blockupdatelist == true) { return; }
+                dataGridView3.Rows.Clear();
+                filtpart2.Clear();
+                //filtpart2.Add(new part() { design = "Список использований", });
+                bool searchpart = false;
+
+                string bufname1 = "";
+                string bufname2 = "";
+                bufname1 = dataGridView1[1, dataGridView1.CurrentRow.Index].Value.ToString();
+                bufname1 = bufname1.Replace(" ", "");
+                foreach (part p in filtpart)
+                {
+                    bufname2 = p.partnr;
+                    bufname2 = bufname2.Replace(" ", "");
+                    
+                    if (bufname1 == bufname2)
+                    {
+                        searchpart = false;
+                    foreach (part f2 in filtpart2)
+                    {
+                        //MessageBox.Show("--" + bufname1 + "--\n--" + bufname2 + "--");
+                        if (p.design == f2.design)
+                        {
+
+                            searchpart = true;
+                            f2.pcount += p.pcount;
+                            break;
+                        }
+                    }
+                            if (searchpart == false)
+                            {
+                                if (p.design=="")
+                        {
+                            filtpart2.Add(new part() { design = p.design, pcount = p.pcount, note = "Без структурных идентификаторов" });
+                        }
+                        else
+                        {
+                          filtpart2.Add(new part() { design = p.design, pcount = p.pcount,note=p.note });
+                        }
+                            
+                            }
+                        
+
+                    }
+                }
+
+            
+            for (int j=0;j<filtpart2.Count;j++)
+            {
+                dataGridView3.Rows.Add((j + 1), filtpart2[j].design, filtpart2[j].note, filtpart2[j].pcount);
+            }
+            int itog = 0;
+            for (int i=0;i< dataGridView3.Rows.Count;i++)
+            {  
+                itog += Int32.Parse(dataGridView3[3, i].Value.ToString());
+            }
+            if (itog != 0)
+            {
+                dataGridView3.Rows.Add("", "Итого","", itog);
+            }
+
+
+
+
+        }
+
+        private void button1_Click_1(object sender, EventArgs e)
+        {
+            
+        }
+
+        private void button1_Click_2(object sender, EventArgs e)
+        {
+           
         }
     }
 }
