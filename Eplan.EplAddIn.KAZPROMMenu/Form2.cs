@@ -29,6 +29,7 @@ namespace Eplan.EplAddIn.KAZPROMMenu
         }
         public class part
         {
+
             public string partnr { get; set; }//Заказной номер
             public int pcount { get; set; } //Количество
             public int spare { get; set; } //Резерв
@@ -679,13 +680,18 @@ namespace Eplan.EplAddIn.KAZPROMMenu
         private static extern int GetWindowThreadProcessId(IntPtr hwnd, ref int lpdwProcessId);
         private void button1_Click_3(object sender, EventArgs e)
         {
-
+            button1.Enabled = false;
             openFileDialog1.Title = "Открыть файл шаблон";
             openFileDialog1.Filter = "Excel Files|*.xls;*.xlsx;*.xlsm";
-
+            
             if (openFileDialog1.ShowDialog() == DialogResult.Cancel)
+            {
+                button1.Enabled = true;
                 return;
+            }
+                
             string xlFileName = openFileDialog1.FileName;
+            label4.Visible = true;
             Excel.Application excl = new Excel.Application();
             Excel.Range Rng;
             Excel.Workbook xlWB;
@@ -897,11 +903,14 @@ namespace Eplan.EplAddIn.KAZPROMMenu
                 excl.Quit();
                 return;
             }
-            
+
             saveFileDialog1.Filter = "Excel Files|*.xlsx;*.xls;*.xlsm";
             saveFileDialog1.Title = "Сохранить Данные в файл Excel";
             if (saveFileDialog1.ShowDialog() == DialogResult.Cancel)
+            {
+                button1.Enabled = true;
                 return;
+            }
             excl.Application.ActiveWorkbook.SaveAs(saveFileDialog1.FileName, Type.Missing,
         Type.Missing, Type.Missing, Type.Missing, Type.Missing, Excel.XlSaveAsAccessMode.xlNoChange,
   Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing);
@@ -922,22 +931,10 @@ namespace Eplan.EplAddIn.KAZPROMMenu
             xlWB = null;
             excl = null;
             System.GC.Collect();
+            label4.Visible = false;
+            button1.Enabled = true;
+
         }
-        /*public void SerializeAndSave(string path, List<work> data)
-        {
-            var serializer = new XmlSerializer(typeof(List<work>));
-            using (var writer = new StreamWriter(path))
-            {
-                serializer.Serialize(writer, data);
-            }
+
         }
-        public void SerializeAndSave(string path, List<SpecPrice> data)
-        {
-            var serializer = new XmlSerializer(typeof(List<SpecPrice>));
-            using (var writer = new StreamWriter(path))
-            {
-                serializer.Serialize(writer, data);
-            }
-        }*/
-    }
 }
