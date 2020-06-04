@@ -689,145 +689,213 @@ namespace Eplan.EplAddIn.KAZPROMMenu
             Excel.Workbook xlWB;
             Excel.Worksheet xlSht;
             xlWB = excl.Workbooks.Open(xlFileName); //открываем наш файл
-            xlSht = xlWB.Worksheets["Список Устройств"];
             long costprice1 = 0;
             long costprice2 = 0;
-            int startline = 4;
-            xlSht.Cells[1, "A"] = "Название проекта-"+CurProj.ProjectName;
-            xlSht.Cells[2, "A"] = "Последний кто работал с проектом-" + CurProj.Properties.PROJ_LASTMODIFICATOR;
-            for (int i = 0; i < MainList.Count; i++)
+            const int Beginrow = 9; //Начальное число строк откуда начинать заполнение
+            int startline = Beginrow;
+            try
             {
-                costprice1 = 0;
-                costprice2 = 0;
-                //Rng=xlSht.get_Range(xlSht.Cells[i + startline, 0], xlSht.Cells[i + startline, 7]);
-                Rng = (Excel.Range)xlSht.get_Range("A" + (i + startline).ToString(), "I" + (i + startline).ToString()).Cells;
-                Rng.Merge(Type.Missing);
-                xlSht.Cells[i + startline, "A"] = MainList[i].NameKit;
-                xlSht.Cells[i + startline, "A"].Font.Size = 12;
-                xlSht.Cells[i + startline, "A"].Font.Bold = true;
-                xlSht.Cells[i + startline, "A"].VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
-                xlSht.Cells[i + startline, "A"].HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
-                startline++;
-                for (int j = 0; j < MainList[i].parts.Count; j++)
+                #region //Общий список устройств
                 {
-                    if (i == 0)
+                    xlSht = xlWB.Worksheets["Общий Список Устройств"];
+                    costprice1 = 0;
+                    costprice2 = 0;
+                    xlSht.Cells[1, "A"] = "Заказчик: " + CurProj.Properties.PROJ_ENDCUSTOMERNAME1;
+                    xlSht.Cells[2, "A"] = "Название проекта: " + CurProj.ProjectName;
+                    xlSht.Cells[3, "A"] = "Номер проекта: " + CurProj.Properties.PROJ_DRAWINGNUMBER;
+                    xlSht.Cells[4, "A"] = "Название фирмы: " + CurProj.Properties.PROJ_COMPANYNAME;
+                    xlSht.Cells[5, "A"] = "№ договора: ---";// + CurProj.Properties.PROJ_SUPPLEMENTARYFIELD;
+                    xlSht.Cells[6, "A"] = "Автор: " + CurProj.Properties.PROJ_CREATOR;
+                    xlSht.Cells[7, "A"] = "Последний обработчик: " + CurProj.Properties.PROJ_LASTMODIFICATOR;
+                    startline = Beginrow;
+                    //Rng=xlSht.get_Range(xlSht.Cells[i + startline, 0], xlSht.Cells[i + startline, 7]);
+                    Rng = (Excel.Range)xlSht.get_Range("A" + (startline).ToString(), "L" + (startline).ToString()).Cells;
+                    Rng.Merge(Type.Missing);
+                    xlSht.Cells[startline, "A"] = MainList[0].NameKit;
+                    xlSht.Cells[startline, "A"].Font.Size = 12;
+                    xlSht.Cells[startline, "A"].Font.Bold = true;
+                    xlSht.Cells[startline, "A"].VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
+                    xlSht.Cells[startline, "A"].HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
+                    startline++;
+                    for (int j = 0; j < MainList[0].parts.Count; j++)
                     {
-                        xlSht.Cells[i + startline, "A"] = (j + 1).ToString();
-                        xlSht.Cells[i + startline, "B"] = MainList[i].parts[j].partnr;
-                        xlSht.Cells[i + startline, "C"] = MainList[i].parts[j].pcount;
-                        xlSht.Cells[i + startline, "D"] = MainList[i].parts[j].spare;
-                        if (MainList[i].parts[j].spare < 0)
+                        xlSht.Cells[startline, "A"] = (j + 1).ToString();
+                        xlSht.Cells[startline, "B"] = MainList[0].parts[j].partnr;
+                        xlSht.Cells[startline, "C"] = MainList[0].parts[j].pcount;
+                        xlSht.Cells[startline, "D"] = MainList[0].parts[j].spare;
+
+                        if (MainList[0].parts[j].spare < 0)
                         {
-                            xlSht.Cells[i + startline, "D"].Interior.Color = ColorTranslator.ToOle(Color.Red);
+                            xlSht.Cells[startline, "D"].Interior.Color = ColorTranslator.ToOle(Color.Red);
                         }
                         else
                         {
-                            if (MainList[i].parts[j].spare == 0)
+                            if (MainList[0].parts[j].spare == 0)
                             {
-                                xlSht.Cells[i + startline, "D"].Interior.Color = ColorTranslator.ToOle(Color.Green);
+                                xlSht.Cells[startline, "D"].Interior.Color = ColorTranslator.ToOle(Color.Green);
                             }
                             else
                             {
-                                xlSht.Cells[i + startline, "D"].Interior.Color = ColorTranslator.ToOle(Color.Yellow);
+                                xlSht.Cells[startline, "D"].Interior.Color = ColorTranslator.ToOle(Color.Yellow);
                             }
 
                         }
-
-
-                        xlSht.Cells[i + startline, "E"] = "шт";
-                        xlSht.Cells[i + startline, "F"] = MainList[i].parts[j].descrip;
-                        xlSht.Cells[i + startline, "G"] = MainList[i].parts[j].erpn;
-                        xlSht.Cells[i + startline, "H"] = MainList[i].parts[j].price1;
-                        // xlSht.Cells[i + startline, "H"].NumberFormat = "#,###.00 ₸";
-                        xlSht.Cells[i + startline, "I"] = MainList[i].parts[j].price2;
-                        //xlSht.Cells[i + startline, "I"].NumberFormat = "#,###.00 €";
-                        costprice1 += (MainList[i].parts[j].price1 * MainList[i].parts[j].pcount);
-                        costprice2 += (MainList[i].parts[j].price2 * MainList[i].parts[j].pcount);
+                        xlSht.Cells[startline, "E"] = MainList[0].parts[j].pcount - MainList[0].parts[j].spare;
+                        xlSht.Cells[startline, "F"] = "шт";
+                        xlSht.Cells[startline, "G"] = MainList[0].parts[j].descrip;
+                        xlSht.Cells[startline, "H"] = MainList[0].parts[j].erpn;
+                        xlSht.Cells[startline, "I"] = MainList[0].parts[j].price1;
+                        xlSht.Cells[startline, "J"] = MainList[0].parts[j].price2;
+                        xlSht.Cells[startline, "K"] = MainList[0].parts[j].price1 * MainList[0].parts[j].pcount;
+                        xlSht.Cells[startline, "L"] = MainList[0].parts[j].price2 * MainList[0].parts[j].pcount;
+                        costprice1 += (MainList[0].parts[j].price1 * MainList[0].parts[j].pcount);
+                        costprice2 += (MainList[0].parts[j].price2 * MainList[0].parts[j].pcount);
                         startline++;
+
                     }
-                    else
+                    Rng = xlSht.get_Range("A" + (startline).ToString(), "I" + (startline).ToString()).Cells;
+                    Rng.Merge(Type.Missing);
+                    xlSht.Cells[startline, "J"] = "Итого:";
+                    xlSht.Cells[startline, "J"].Font.Bold = true;
+                    xlSht.Cells[startline, "J"].VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
+                    xlSht.Cells[startline, "J"].HorizontalAlignment = Excel.XlHAlign.xlHAlignRight;
+                    xlSht.Cells[startline, "K"] = costprice1;
+                    //xlSht.Cells[i + startline, "H"].NumberFormat = "#,###.00 ₸";
+                    xlSht.Cells[startline, "K"].Font.Bold = true;
+                    xlSht.Cells[startline, "K"].VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
+                    xlSht.Cells[startline, "K"].HorizontalAlignment = Excel.XlHAlign.xlHAlignRight;
+                    xlSht.Cells[startline, "L"] = costprice2;
+                    //xlSht.Cells[i + startline, "I"].NumberFormat = "#,###.00 €";
+                    xlSht.Cells[startline, "L"].Font.Bold = true;
+                    xlSht.Cells[startline, "L"].VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
+                    xlSht.Cells[startline, "L"].HorizontalAlignment = Excel.XlHAlign.xlHAlignRight;
+                    Rng = xlSht.get_Range("A" + 4, "L" + (startline).ToString()).Cells;
+                    Rng.Borders.get_Item(Excel.XlBordersIndex.xlEdgeBottom).LineStyle = Excel.XlLineStyle.xlContinuous;
+                    Rng.Borders.get_Item(Excel.XlBordersIndex.xlEdgeRight).LineStyle = Excel.XlLineStyle.xlContinuous;
+                    Rng.Borders.get_Item(Excel.XlBordersIndex.xlInsideHorizontal).LineStyle = Excel.XlLineStyle.xlContinuous;
+                    Rng.Borders.get_Item(Excel.XlBordersIndex.xlInsideVertical).LineStyle = Excel.XlLineStyle.xlContinuous;
+                    Rng.Borders.get_Item(Excel.XlBordersIndex.xlEdgeTop).LineStyle = Excel.XlLineStyle.xlContinuous;
+                    //startline++;
+
+                }
+                #endregion
+
+                #region //Список устройств
+
+                {
+                    xlSht = xlWB.Worksheets["Список Устройств"];
+                    startline = Beginrow;
+
+                    for (int i = 1; i < MainList.Count; i++)
                     {
-                        xlSht.Cells[i + startline, "A"] = (j + 1).ToString();
-                        xlSht.Cells[i + startline, "B"] = MainList[i].parts[j].partnr;
-                        xlSht.Cells[i + startline, "C"] = MainList[i].parts[j].pcount;
-                        xlSht.Cells[i + startline, "D"] = "0";
-                        xlSht.Cells[i + startline, "E"] = "шт";
-                        xlSht.Cells[i + startline, "F"] = MainList[i].parts[j].descrip;
-                        xlSht.Cells[i + startline, "G"] = MainList[i].parts[j].erpn;
-                        //xlSht.Cells[i + startline, "H"].NumberFormat = "#,###.00 ₸";
-                        xlSht.Cells[i + startline, "I"] = MainList[i].parts[j].price2;
-                        // xlSht.Cells[i + startline, "I"].NumberFormat = "#,###.00 €";
-                        costprice1 += (MainList[i].parts[j].price1 * MainList[i].parts[j].pcount);
-                        costprice2 += (MainList[i].parts[j].price2 * MainList[i].parts[j].pcount);
+                        costprice1 = 0;
+                        costprice2 = 0;
+                        //Rng=xlSht.get_Range(xlSht.Cells[i + startline, 0], xlSht.Cells[i + startline, 7]);
+                        Rng = (Excel.Range)xlSht.get_Range("A" + (startline).ToString(), "J" + (startline).ToString()).Cells;
+                        Rng.Merge(Type.Missing);
+                        xlSht.Cells[startline, "A"] = MainList[i].NameKit;
+                        xlSht.Cells[startline, "A"].Font.Size = 12;
+                        xlSht.Cells[startline, "A"].Font.Bold = true;
+                        xlSht.Cells[startline, "A"].VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
+                        xlSht.Cells[startline, "A"].HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
                         startline++;
+                        for (int j = 0; j < MainList[i].parts.Count; j++)
+                        {
+
+                            xlSht.Cells[startline, "A"] = (j + 1).ToString();
+                            xlSht.Cells[startline, "B"] = MainList[i].parts[j].partnr;
+                            xlSht.Cells[startline, "C"] = MainList[i].parts[j].pcount;
+                            xlSht.Cells[startline, "D"] = "шт";
+                            xlSht.Cells[startline, "E"] = MainList[i].parts[j].descrip;
+                            xlSht.Cells[startline, "F"] = MainList[i].parts[j].erpn;
+                            xlSht.Cells[startline, "G"] = MainList[i].parts[j].price1;
+                            xlSht.Cells[startline, "H"] = MainList[i].parts[j].price2;
+                            xlSht.Cells[startline, "I"] = MainList[i].parts[j].price1 * MainList[i].parts[j].pcount;
+                            xlSht.Cells[startline, "J"] = MainList[i].parts[j].price2 * MainList[i].parts[j].pcount;
+                            costprice1 += (MainList[i].parts[j].price1 * MainList[i].parts[j].pcount);
+                            costprice2 += (MainList[i].parts[j].price2 * MainList[i].parts[j].pcount);
+                            startline++;
+                        }
+                        Rng = xlSht.get_Range("A" + (startline).ToString(), "G" + (startline).ToString()).Cells;
+                        Rng.Merge(Type.Missing);
+                        xlSht.Cells[startline, "H"] = "Итого:";
+                        xlSht.Cells[startline, "H"].Font.Bold = true;
+                        xlSht.Cells[startline, "H"].VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
+                        xlSht.Cells[startline, "H"].HorizontalAlignment = Excel.XlHAlign.xlHAlignRight;
+                        xlSht.Cells[startline, "I"] = costprice1;
+                        xlSht.Cells[startline, "I"].Font.Bold = true;
+                        xlSht.Cells[startline, "I"].VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
+                        xlSht.Cells[startline, "I"].HorizontalAlignment = Excel.XlHAlign.xlHAlignRight;
+                        xlSht.Cells[startline, "J"] = costprice2;
+                        //xlSht.Cells[i + startline, "I"].NumberFormat = "#,###.00 €";
+                        xlSht.Cells[startline, "J"].Font.Bold = true;
+                        xlSht.Cells[startline, "J"].VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
+                        xlSht.Cells[startline, "J"].HorizontalAlignment = Excel.XlHAlign.xlHAlignRight;
+                        Rng = xlSht.get_Range("A" + 4, "J" + (startline).ToString()).Cells;
+                        Rng.Borders.get_Item(Excel.XlBordersIndex.xlEdgeBottom).LineStyle = Excel.XlLineStyle.xlContinuous;
+                        Rng.Borders.get_Item(Excel.XlBordersIndex.xlEdgeRight).LineStyle = Excel.XlLineStyle.xlContinuous;
+                        Rng.Borders.get_Item(Excel.XlBordersIndex.xlInsideHorizontal).LineStyle = Excel.XlLineStyle.xlContinuous;
+                        Rng.Borders.get_Item(Excel.XlBordersIndex.xlInsideVertical).LineStyle = Excel.XlLineStyle.xlContinuous;
+                        Rng.Borders.get_Item(Excel.XlBordersIndex.xlEdgeTop).LineStyle = Excel.XlLineStyle.xlContinuous;
+                        startline++;
+
+
                     }
 
                 }
-                Rng = xlSht.get_Range("A" + (i + startline).ToString(), "F" + (i + startline).ToString()).Cells;
-                Rng.Merge(Type.Missing);
-                xlSht.Cells[i + startline, "G"] = "Итого:";
-                xlSht.Cells[i + startline, "G"].Font.Bold = true;
-                xlSht.Cells[i + startline, "G"].VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
-                xlSht.Cells[i + startline, "G"].HorizontalAlignment = Excel.XlHAlign.xlHAlignRight;
-                xlSht.Cells[i + startline, "H"] = costprice1;
-                //xlSht.Cells[i + startline, "H"].NumberFormat = "#,###.00 ₸";
-                xlSht.Cells[i + startline, "H"].Font.Bold = true;
-                xlSht.Cells[i + startline, "H"].VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
-                xlSht.Cells[i + startline, "H"].HorizontalAlignment = Excel.XlHAlign.xlHAlignRight;
-                xlSht.Cells[i + startline, "I"] = costprice2;
-                //xlSht.Cells[i + startline, "I"].NumberFormat = "#,###.00 €";
-                xlSht.Cells[i + startline, "I"].Font.Bold = true;
-                xlSht.Cells[i + startline, "I"].VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
-                xlSht.Cells[i + startline, "I"].HorizontalAlignment = Excel.XlHAlign.xlHAlignRight;
-                Rng = xlSht.get_Range("A" + 4, "I" + (i + startline).ToString()).Cells;
-                Rng.Borders.get_Item(Excel.XlBordersIndex.xlEdgeBottom).LineStyle = Excel.XlLineStyle.xlContinuous;
-                Rng.Borders.get_Item(Excel.XlBordersIndex.xlEdgeRight).LineStyle = Excel.XlLineStyle.xlContinuous;
-                Rng.Borders.get_Item(Excel.XlBordersIndex.xlInsideHorizontal).LineStyle = Excel.XlLineStyle.xlContinuous;
-                Rng.Borders.get_Item(Excel.XlBordersIndex.xlInsideVertical).LineStyle = Excel.XlLineStyle.xlContinuous;
-                Rng.Borders.get_Item(Excel.XlBordersIndex.xlEdgeTop).LineStyle = Excel.XlLineStyle.xlContinuous;
-                //startline++;
+                #endregion
 
+                #region //КП
+                {
+                    xlSht = xlWB.Worksheets["КП"];
+                    startline = Beginrow;
+                    costprice1 = 0;
+                    costprice2 = 0;
+                    for (int i = 0; i < SpecALL.Count; i++)
+                    {
+                        if (SpecALL[i].id == 0) continue;
+                        xlSht.Cells[i + startline, "A"] = SpecALL[i].id;
+                        xlSht.Cells[i + startline, "B"] = SpecALL[i].NameKit;
+                        xlSht.Cells[i + startline, "C"] = SpecALL[i].pcount;
+                        xlSht.Cells[i + startline, "D"] = "компл";
+                        xlSht.Cells[i + startline, "E"] = SpecALL[i].Price1;
+                        xlSht.Cells[i + startline, "F"] = SpecALL[i].Price2;
+                        xlSht.Cells[i + startline, "G"] = SpecALL[i].COSTPrice1;
+                        xlSht.Cells[i + startline, "H"] = SpecALL[i].COSTPrice2;
+                        costprice1 += SpecALL[i].COSTPrice1;
+                        costprice2 += SpecALL[i].COSTPrice2;
+
+                    }
+                    xlSht.Cells[SpecALL.Count + startline, "F"] = "Итого:";
+                    xlSht.Cells[SpecALL.Count + startline, "F"].Font.Bold = true;
+                    xlSht.Cells[SpecALL.Count + startline, "F"].VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
+                    xlSht.Cells[SpecALL.Count + startline, "F"].HorizontalAlignment = Excel.XlHAlign.xlHAlignRight;
+                    xlSht.Cells[SpecALL.Count + startline, "G"] = costprice1;
+                    xlSht.Cells[SpecALL.Count + startline, "G"].Font.Bold = true;
+                    xlSht.Cells[SpecALL.Count + startline, "G"].VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
+                    xlSht.Cells[SpecALL.Count + startline, "G"].HorizontalAlignment = Excel.XlHAlign.xlHAlignRight;
+                    xlSht.Cells[SpecALL.Count + startline, "H"] = costprice2;
+                    xlSht.Cells[SpecALL.Count + startline, "H"].Font.Bold = true;
+                    xlSht.Cells[SpecALL.Count + startline, "H"].VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
+                    xlSht.Cells[SpecALL.Count + startline, "H"].HorizontalAlignment = Excel.XlHAlign.xlHAlignRight;
+                    Rng = xlSht.get_Range("A" + 4, "H" + (SpecALL.Count + startline).ToString()).Cells;
+                    Rng.Borders.get_Item(Excel.XlBordersIndex.xlEdgeBottom).LineStyle = Excel.XlLineStyle.xlContinuous;
+                    Rng.Borders.get_Item(Excel.XlBordersIndex.xlEdgeRight).LineStyle = Excel.XlLineStyle.xlContinuous;
+                    Rng.Borders.get_Item(Excel.XlBordersIndex.xlInsideHorizontal).LineStyle = Excel.XlLineStyle.xlContinuous;
+                    Rng.Borders.get_Item(Excel.XlBordersIndex.xlInsideVertical).LineStyle = Excel.XlLineStyle.xlContinuous;
+                    Rng.Borders.get_Item(Excel.XlBordersIndex.xlEdgeTop).LineStyle = Excel.XlLineStyle.xlContinuous;
+                }
+                #endregion
 
             }
-            xlSht = xlWB.Worksheets["КП"];
-            startline = 4;
-            costprice1 = 0;
-            costprice2 = 0;
-            xlSht.Cells[1, "A"] = "Название проекта-" + CurProj.ProjectName;
-            xlSht.Cells[2, "A"] = "Последний кто работал с проектом-" + CurProj.Properties.PROJ_LASTMODIFICATOR;
-            for (int i = 0; i < SpecALL.Count; i++)
+            catch
             {
-                if (SpecALL[i].id == 0) continue;
-                xlSht.Cells[i + startline, "A"] = SpecALL[i].id;
-                xlSht.Cells[i + startline, "B"] = SpecALL[i].NameKit;
-                xlSht.Cells[i + startline, "C"] = SpecALL[i].pcount;
-                xlSht.Cells[i + startline, "D"] = "компл";
-                xlSht.Cells[i + startline, "E"] = SpecALL[i].Price1;
-                xlSht.Cells[i + startline, "F"] = SpecALL[i].Price2;
-                xlSht.Cells[i + startline, "G"] = SpecALL[i].COSTPrice1;
-                xlSht.Cells[i + startline, "H"] = SpecALL[i].COSTPrice2;
-                costprice1 += SpecALL[i].COSTPrice1;
-                costprice2 += SpecALL[i].COSTPrice2;
-
+                MessageBox.Show("Ошибка при работе с файлом, возможно шаблон файла не актуален.");
+                xlWB.Close(false); //сохраняем и закрываем файл
+                excl.Quit();
+                return;
             }
-            xlSht.Cells[SpecALL.Count + startline, "F"] = "Итого:";
-            xlSht.Cells[SpecALL.Count + startline, "F"].Font.Bold = true;
-            xlSht.Cells[SpecALL.Count + startline, "F"].VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
-            xlSht.Cells[SpecALL.Count + startline, "F"].HorizontalAlignment = Excel.XlHAlign.xlHAlignRight;
-            xlSht.Cells[SpecALL.Count + startline, "G"] = costprice1;
-            xlSht.Cells[SpecALL.Count + startline, "G"].Font.Bold = true;
-            xlSht.Cells[SpecALL.Count + startline, "G"].VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
-            xlSht.Cells[SpecALL.Count + startline, "G"].HorizontalAlignment = Excel.XlHAlign.xlHAlignRight;
-            xlSht.Cells[SpecALL.Count + startline, "H"] = costprice2;
-            xlSht.Cells[SpecALL.Count + startline, "H"].Font.Bold = true;
-            xlSht.Cells[SpecALL.Count + startline, "H"].VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
-            xlSht.Cells[SpecALL.Count + startline, "H"].HorizontalAlignment = Excel.XlHAlign.xlHAlignRight;
-            Rng = xlSht.get_Range("A" + 4, "H" + (SpecALL.Count + startline).ToString()).Cells;
-            Rng.Borders.get_Item(Excel.XlBordersIndex.xlEdgeBottom).LineStyle = Excel.XlLineStyle.xlContinuous;
-            Rng.Borders.get_Item(Excel.XlBordersIndex.xlEdgeRight).LineStyle = Excel.XlLineStyle.xlContinuous;
-            Rng.Borders.get_Item(Excel.XlBordersIndex.xlInsideHorizontal).LineStyle = Excel.XlLineStyle.xlContinuous;
-            Rng.Borders.get_Item(Excel.XlBordersIndex.xlInsideVertical).LineStyle = Excel.XlLineStyle.xlContinuous;
-            Rng.Borders.get_Item(Excel.XlBordersIndex.xlEdgeTop).LineStyle = Excel.XlLineStyle.xlContinuous;
+            
             saveFileDialog1.Filter = "Excel Files|*.xlsx;*.xls;*.xlsm";
             saveFileDialog1.Title = "Сохранить Данные в файл Excel";
             if (saveFileDialog1.ShowDialog() == DialogResult.Cancel)
@@ -837,9 +905,6 @@ namespace Eplan.EplAddIn.KAZPROMMenu
   Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing);
             xlWB.Close(false); //сохраняем и закрываем файл
             excl.Quit();
-
-            //SerializeAndSave("C:\\TamplateKAZPROM_EPLANMainList.Tttl", MainList);
-            //SerializeAndSave("C:\\TamplateKAZPROM_EPLANSpecAll.Tttl", SpecALL);
         }
         /*public void SerializeAndSave(string path, List<work> data)
         {
