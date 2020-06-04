@@ -683,7 +683,7 @@ namespace Eplan.EplAddIn.KAZPROMMenu
             button1.Enabled = false;
             openFileDialog1.Title = "Открыть файл шаблон";
             openFileDialog1.Filter = "Excel Files|*.xls;*.xlsx;*.xlsm";
-            
+            MultiLangString mlstring = new MultiLangString();
             if (openFileDialog1.ShowDialog() == DialogResult.Cancel)
             {
                 button1.Enabled = true;
@@ -701,6 +701,7 @@ namespace Eplan.EplAddIn.KAZPROMMenu
             long costprice2 = 0;
             const int Beginrow = 9; //Начальное число строк откуда начинать заполнение
             int startline = Beginrow;
+
             try
             {
                 #region //Общий список устройств
@@ -708,13 +709,23 @@ namespace Eplan.EplAddIn.KAZPROMMenu
                     xlSht = xlWB.Worksheets["Общий Список Устройств"];
                     costprice1 = 0;
                     costprice2 = 0;
+                    try
+                    {
                     xlSht.Cells[1, "A"] = "Заказчик: " + CurProj.Properties.PROJ_ENDCUSTOMERNAME1;
                     xlSht.Cells[2, "A"] = "Название проекта: " + CurProj.ProjectName;
                     xlSht.Cells[3, "A"] = "Номер проекта: " + CurProj.Properties.PROJ_DRAWINGNUMBER;
                     xlSht.Cells[4, "A"] = "Название фирмы: " + CurProj.Properties.PROJ_COMPANYNAME;
-                    xlSht.Cells[5, "A"] = "№ договора: ---";// + CurProj.Properties.PROJ_SUPPLEMENTARYFIELD;
-                    xlSht.Cells[6, "A"] = "Автор: " + CurProj.Properties.PROJ_CREATOR;
+                    mlstring = CurProj.Properties["EPLAN.Project.UserSupplementaryField6"].ToMultiLangString();
+                    xlSht.Cells[5, "A"] = "№ договора: "+ mlstring.GetStringToDisplay(ISOCode.Language.L_ru_RU);// + CurProj.Properties.PROJ_SUPPLEMENTARYFIELD;
+                    mlstring = CurProj.Properties["EPLAN.Project.UserSupplementaryField1"].ToMultiLangString();
+                    xlSht.Cells[6, "A"] = "Автор: " + mlstring.GetStringToDisplay(ISOCode.Language.L_ru_RU);                   
                     xlSht.Cells[7, "A"] = "Последний обработчик: " + CurProj.Properties.PROJ_LASTMODIFICATOR;
+                    }
+                    catch
+                    {
+                        MessageBox.Show("Ошибка чтения свойств проекта. Проверьте все ли данные существуют.");
+                    }
+                    
                     startline = Beginrow;
                     //Rng=xlSht.get_Range(xlSht.Cells[i + startline, 0], xlSht.Cells[i + startline, 7]);
                     Rng = (Excel.Range)xlSht.get_Range("A" + (startline).ToString(), "L" + (startline).ToString()).Cells;
