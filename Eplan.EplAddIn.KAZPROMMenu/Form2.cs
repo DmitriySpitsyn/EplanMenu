@@ -16,6 +16,7 @@ using Eplan.EplApi.MasterData;
 using Excel = Microsoft.Office.Interop.Excel;
 using System.Xml.Serialization;
 using System.IO;
+using System.Runtime.InteropServices;
 
 namespace Eplan.EplAddIn.KAZPROMMenu
 {
@@ -674,7 +675,8 @@ namespace Eplan.EplAddIn.KAZPROMMenu
         {
            
         }
-
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern int GetWindowThreadProcessId(IntPtr hwnd, ref int lpdwProcessId);
         private void button1_Click_3(object sender, EventArgs e)
         {
 
@@ -905,6 +907,21 @@ namespace Eplan.EplAddIn.KAZPROMMenu
   Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing);
             xlWB.Close(false); //сохраняем и закрываем файл
             excl.Quit();
+            System.Runtime.InteropServices.Marshal.ReleaseComObject(xlSht);
+            System.Runtime.InteropServices.Marshal.ReleaseComObject(xlWB);
+            System.Runtime.InteropServices.Marshal.ReleaseComObject(excl);
+            int tExcelPID = 0;
+            int tHwnd = 0;
+            tHwnd = excl.Hwnd; //Получим HWND окна
+            System.Diagnostics.Process tExcelProcess;
+            GetWindowThreadProcessId((IntPtr)tHwnd, ref tExcelPID); //По HWND получим PID
+            tExcelProcess = System.Diagnostics.Process.GetProcessById(tExcelPID); //Подключимся к процессу                                               ////Убийство процесса Excel
+            tExcelProcess.Kill();
+            tExcelProcess = null;
+            xlSht = null;
+            xlWB = null;
+            excl = null;
+            System.GC.Collect();
         }
         /*public void SerializeAndSave(string path, List<work> data)
         {
