@@ -99,6 +99,12 @@
     <Compile Include="3D\Form1ver2.Designer.cs">
       <DependentUpon>Form1ver2.cs</DependentUpon>
     </Compile>
+    <Compile Include="SelectKIT.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SelectKIT.Designer.cs">
+      <DependentUpon>SelectKIT.cs</DependentUpon>
+    </Compile>
     <Compile Include="PLC.cs" />
     <Compile Include="3D\Form1.cs">
       <SubType>Form</SubType>
@@ -143,6 +149,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Form2.resx">
       <DependentUpon>Form2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SelectKIT.resx">
+      <DependentUpon>SelectKIT.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="UpdatePriceForm.resx">
       <DependentUpon>UpdatePriceForm.cs</DependentUpon>
