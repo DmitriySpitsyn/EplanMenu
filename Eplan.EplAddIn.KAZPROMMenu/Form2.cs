@@ -232,7 +232,7 @@ namespace Eplan.EplAddIn.KAZPROMMenu
                                     }
                                     catch (EmptyPropertyException)
                                     {
-
+                                        bufdecp = "";
                                     }
                                     KIT.parts.Add(new part() { partnr = f1.Properties.DEVICELISTENTRY_PARTNR, pcount = f1.Properties.DEVICELISTENTRY_COUNTALLOWED , descrip = bufdecp });
                                 }
@@ -266,7 +266,7 @@ namespace Eplan.EplAddIn.KAZPROMMenu
                     }
                     }
                 #endregion
-                
+                SpecALL.Clear();
                     for (int j = 0; j < MainList.Count; j++)
                 {
                     MainList[j].id = j;
@@ -788,7 +788,7 @@ namespace Eplan.EplAddIn.KAZPROMMenu
                     xlSht.Cells[startline, "L"].Font.Bold = true;
                     xlSht.Cells[startline, "L"].VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
                     xlSht.Cells[startline, "L"].HorizontalAlignment = Excel.XlHAlign.xlHAlignRight;
-                    Rng = xlSht.get_Range("A" + 4, "L" + (startline).ToString()).Cells;
+                    Rng = xlSht.get_Range("A1" , "L" + (startline).ToString()).Cells;
                     Rng.Borders.get_Item(Excel.XlBordersIndex.xlEdgeBottom).LineStyle = Excel.XlLineStyle.xlContinuous;
                     Rng.Borders.get_Item(Excel.XlBordersIndex.xlEdgeRight).LineStyle = Excel.XlLineStyle.xlContinuous;
                     Rng.Borders.get_Item(Excel.XlBordersIndex.xlInsideHorizontal).LineStyle = Excel.XlLineStyle.xlContinuous;
@@ -850,7 +850,7 @@ namespace Eplan.EplAddIn.KAZPROMMenu
                         xlSht.Cells[startline, "J"].Font.Bold = true;
                         xlSht.Cells[startline, "J"].VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
                         xlSht.Cells[startline, "J"].HorizontalAlignment = Excel.XlHAlign.xlHAlignRight;
-                        Rng = xlSht.get_Range("A" + 4, "J" + (startline).ToString()).Cells;
+                        Rng = xlSht.get_Range("A1" , "J" + (startline).ToString()).Cells;
                         Rng.Borders.get_Item(Excel.XlBordersIndex.xlEdgeBottom).LineStyle = Excel.XlLineStyle.xlContinuous;
                         Rng.Borders.get_Item(Excel.XlBordersIndex.xlEdgeRight).LineStyle = Excel.XlLineStyle.xlContinuous;
                         Rng.Borders.get_Item(Excel.XlBordersIndex.xlInsideHorizontal).LineStyle = Excel.XlLineStyle.xlContinuous;
@@ -897,7 +897,7 @@ namespace Eplan.EplAddIn.KAZPROMMenu
                     xlSht.Cells[SpecALL.Count + startline, "H"].Font.Bold = true;
                     xlSht.Cells[SpecALL.Count + startline, "H"].VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
                     xlSht.Cells[SpecALL.Count + startline, "H"].HorizontalAlignment = Excel.XlHAlign.xlHAlignRight;
-                    Rng = xlSht.get_Range("A" + 4, "H" + (SpecALL.Count + startline).ToString()).Cells;
+                    Rng = xlSht.get_Range("A1", "H" + (SpecALL.Count + startline).ToString()).Cells;
                     Rng.Borders.get_Item(Excel.XlBordersIndex.xlEdgeBottom).LineStyle = Excel.XlLineStyle.xlContinuous;
                     Rng.Borders.get_Item(Excel.XlBordersIndex.xlEdgeRight).LineStyle = Excel.XlLineStyle.xlContinuous;
                     Rng.Borders.get_Item(Excel.XlBordersIndex.xlInsideHorizontal).LineStyle = Excel.XlLineStyle.xlContinuous;
